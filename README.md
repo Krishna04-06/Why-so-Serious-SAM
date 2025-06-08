@@ -1,8 +1,8 @@
 
 
-# HiveNightmare Fileless Exploit PoC:
+# HiveNightmare 'Fileless' Exploit PoC:
 
-![Demo Screenshot](https://github.com/user-attachments/assets/f93a65bd-d000-41f0-a941-631f047417e4)
+![Screenshot 2025-05-21 001453](https://github.com/user-attachments/assets/15ccb34b-483d-497a-8fa9-70f0f61232d6)
 
 ---
 
