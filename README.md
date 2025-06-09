@@ -201,13 +201,11 @@ rundll32.exe \\10.10.X.X\share\nsfw.dll,ReflectEntry
 
 - [LOLOL Farm – LOLBin Playground](https://lolol.farm/)
 - [LOLGEN – Generate LOLBin Chains](https://lolgen.hdks.org/)
-- [MITRE ATT&CK: S0697](https://attack.mitre.org/software/S0697/)
+- [Detecting SeriousSam](https://medium.com/@mvelazco/detecting-serioussam-cve-2021-36934-with-splunk-855dcbb10076)
 - [DLL Injection Primer](https://www.crow.rip/crows-nest/mal/dev/inject/dll-injection)
 - [Print Spooler Exploit Chain](https://itm4n.github.io/printnightmare-not-over/)
 - [Fileless Malware – Wikipedia](https://en.wikipedia.org/wiki/Fileless_malware)
-- [SysNightmare](https://github.com/GossiTheDog/SystemNightmare)
 - [PrintSpoofer (Original)](https://github.com/itm4n/PrintSpoofer/tree/master)
-- [PrintSpoofer 2](https://github.com/dievus/printspoofer)
 - [HiveNightmare](https://github.com/GossiTheDog/HiveNightmare)
 
 ---
