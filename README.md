@@ -207,6 +207,7 @@ rundll32.exe \\10.10.X.X\share\nsfw.dll,ReflectEntry
 - [Fileless Malware – Wikipedia](https://en.wikipedia.org/wiki/Fileless_malware)
 - [PrintSpoofer (Original)](https://github.com/itm4n/PrintSpoofer/tree/master)
 - [HiveNightmare](https://github.com/GossiTheDog/HiveNightmare)
+- [Mitre Attck T1055](https://attack.mitre.org/techniques/T1055/001/)
 
 ---
 
