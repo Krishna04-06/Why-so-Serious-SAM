@@ -1,6 +1,6 @@
 
 
-# 🧠 Windows Forensics + HiveNightmare Threat Detection
+# Windows Forensics + HiveNightmare Threat Detection
 
 ## 1. Investigation Workflow
 
@@ -17,7 +17,7 @@
 11. USB and MountPoint History  
 12. Data Recovery (Deleted/VSS)  
 13. Malware RE  
-14. Threat-Specific Detection ✅  
+14. Threat-Specific Detection 
 15. Reporting
 
 ---
@@ -34,7 +34,7 @@
 
 ## 3. HiveNightmare (CVE‑2021‑36934) Detection
 
-### 🎯 TTP Summary
+### TTP Summary
 
 - **Exploit Name**: HiveNightmare / SeriousSAM  
 - **CVE**: CVE-2021-36934  
@@ -47,7 +47,7 @@
 
 ---
 
-## 🔍 Detection Events
+## Detection Events
 
 | Event ID | Description | Logic |
 |----------|-------------|-------|
@@ -58,7 +58,7 @@
 
 ---
 
-## 🧠 Detection Queries
+## Detection Queries
 
 **Suspicious Process Creation (KQL/Elastic):**
 
