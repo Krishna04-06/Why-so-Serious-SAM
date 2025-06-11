@@ -1,6 +1,4 @@
-# Songbird Log Export Script
-# Author: LamWhite Red Team
-# Target: Windows 11 (Fileless / LOLBins / Spooler Test Systems)
+
 
 $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
 $baseDir = "$env:USERPROFILE\songbird_logs\$timestamp"
