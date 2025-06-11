@@ -1,47 +1,49 @@
-function Invoke-Nightmare
+function Invoke-HiveNightmare
 {
     <#
         .SYNOPSIS
-        Stub for CVE-2021-1675 (PrintNightmare) exploit script.
+        Stub for CVE-2021-36934 (HiveNightmare/SeriousSAM) exploit script.
 
         .DESCRIPTION
-        This is a non-functional stub of the PrintNightmare exploit script.
+        This is a non-functional stub of the HiveNightmare exploit script.
         All implementation details and payloads have been removed.
 
-    for more info:
-    Exploits CVE-2021-1675 (PrintNightmare)
+        For more info:
+        Exploits CVE-2021-36934 (HiveNightmare/SeriousSAM)
 
         Authors:
-            Caleb Stewart - https://github.com/calebstewart
-            John Hammond - https://github.com/JohnHammond
-        URL: https://github.com/calebstewart/CVE-2021-1675
+            Stub based on PrintNightmare script by Caleb Stewart & John Hammond
+            Adapted to HiveNightmare by [Your Name]
+        Reference: https://github.com/GossiTheDog/HiveNightmare
     #>
     param (
-        [string]$DriverName = "Totally Not Malicious",
-        [string]$NewUser = "",
-        [string]$NewPassword = "",
-        [string]$DLL = ""
+        [string]$BackupPath = "C:\Windows\System32\config\RegBack",
+        [string]$Destination = "C:\Temp\hive_backup",
+        [Switch]$ExtractSAM,
+        [Switch]$ExtractSYSTEM,
+        [Switch]$ExtractSECURITY
     )
 
-    Write-Host "[*] Stub: Invoke-Nightmare called."
-    Write-Host "DriverName: $DriverName"
-    Write-Host "NewUser: $NewUser"
-    Write-Host "NewPassword: $NewPassword"
-    Write-Host "DLL: $DLL"
+    Write-Host "[*] Stub: Invoke-HiveNightmare called."
+    Write-Host "BackupPath: $BackupPath"
+    Write-Host "Destination: $Destination"
+    Write-Host "ExtractSAM: $ExtractSAM"
+    Write-Host "ExtractSYSTEM: $ExtractSYSTEM"
+    Write-Host "ExtractSECURITY: $ExtractSECURITY"
     # No exploit or payload logic is present in this stub.
     return
 }
 
-function get_nightmare_dll
+function get_hivenightmare_hives
 {
     <#
         .SYNOPSIS
-        Stub for payload generator.
+        Stub for hive file extractor.
 
         .DESCRIPTION
-        This stub does not generate or return any payload.
+        This stub does not extract or return any registry hive files.
     #>
-    Write-Host "[*] Stub: get_nightmare_dll called."
+    Write-Host "[*] Stub: get_hivenightmare_hives called."
     return @()
 }
 
