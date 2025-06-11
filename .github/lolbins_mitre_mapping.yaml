@@ -1,0 +1,109 @@
+# YAML CONFIG: LOLBins Mapping for NSFW-style Payloads to MITRE ATT&CK
+
+T1486:
+  name: Data Encrypted for Impact
+  lolbins:
+    - cipher.exe
+    - bcdedit.exe
+    - bootcfg.exe
+    - manage-bde.exe
+    - vssadmin.exe
+  notes: NSFW uses AES-XTS via DLL payload
+
+T1210:
+  name: Exploitation of Remote Services (Print/HiveNightmare)
+  lolbins:
+    - rundll32.exe
+    - spoolsv.exe
+    - reg.exe
+
+T1083:
+  name: File and Directory Discovery
+  lolbins:
+    - cmd.exe
+    - dir
+    - tree
+    - powershell.exe
+    - forfiles.exe
+    - where.exe
+
+T1070.001:
+  name: Indicator Removal - Clear Windows Event Logs
+  lolbins:
+    - wevtutil.exe
+    - powershell.exe (Clear-EventLog)
+
+T1036:
+  name: Masquerading
+  lolbins:
+    - renamed PsExec.exe (dllhost.dat)
+    - svchost.exe
+    - explorer.exe
+
+T1003.001:
+  name: Credential Dumping - LSASS Memory
+  lolbins:
+    - procdump.exe
+    - rundll32.exe
+    - mimikatz.exe (renamed or injected)
+
+T1021.002:
+  name: SMB/Windows Admin Shares
+  lolbins:
+    - PsExec.exe
+    - net.exe (use)
+    - copy.exe
+
+T1053.005:
+  name: Scheduled Task/Job
+  lolbins:
+    - schtasks.exe
+    - at.exe
+    - powershell.exe (Register-ScheduledTask)
+
+T1218.011:
+  name: Rundll32 Proxy Execution
+  lolbins:
+    - rundll32.exe
+
+T1569.002:
+  name: Service Execution
+  lolbins:
+    - sc.exe
+    - PsExec.exe
+
+T1529:
+  name: System Shutdown/Reboot
+  lolbins:
+    - shutdown.exe
+    - powershell.exe (Restart-Computer)
+
+T1078.003:
+  name: Valid Accounts: Local Accounts
+  lolbins:
+    - PsExec.exe
+    - net.exe
+    - wmic.exe
+
+T1047:
+  name: WMI Execution
+  lolbins:
+    - wmic.exe
+    - powershell.exe (Invoke-WmiMethod)
+
+T0866:
+  name: ICS - Remote Service Exploitation
+  lolbins:
+    - spoolsv.exe
+    - rpcss.dll
+
+T0867:
+  name: ICS - Lateral Tool Transfer
+  lolbins:
+    - net.exe (share)
+    - robocopy.exe
+    - wmic.exe
+
+T0828:
+  name: ICS - Loss of Productivity and Revenue
+  impact: "Triggered via ransomware-style NSFW disruption"
