@@ -1,71 +1,128 @@
+# Why-so-Serious-SAM: Fileless Ransomware Red Team Simulation Lab
 
+## 🎯 Objective
 
-# Windows Forensics + HiveNightmare Threat Detection
+Design and deploy a **realistic fileless ransomware simulation** that mirrors modern threat actor tradecraft, leveraging:
 
-## 1. Investigation Workflow
+* MITRE ATT\&CK-aligned techniques
+* LOLBins (Living Off the Land Binaries)
+* Reflective DLL injection (e.g., `nsfw.dll`)
+* DiskCryptor-based AES-XTS disk impact
+* Blue Team detection with ELK Stack + Sigma
 
-1. Acquisition  
-2. Live Scanning  
-3. Memory Forensics  
-4. Disk Mount & Triage  
-5. Persistence Analysis  
-6. Malware Analysis  
-7. System Registry Audit  
-8. Root Cause Investigation  
-9. Lateral Movement Tracking  
-10. Timeline Construction  
-11. USB and MountPoint History  
-12. Data Recovery (Deleted/VSS)  
-13. Malware RE  
-14. Threat-Specific Detection 
-15. Reporting
+The end goal is to showcase **advanced offensive and defensive skills** in a professional cybersecurity setting.
 
 ---
 
-## 2. Tooling
+## 🧪 Lab Architecture
 
-- **Disk & Memory Acquisition**: FTK Imager, Magnet RAM Capturer, KAPE  
-- **Memory Analysis**: Volatility, MemProcFS  
-- **Disk Analysis**: Autopsy, Arsenal Image Mounter, EZTools  
-- **Log & Timeline**: Event Log Explorer, Chainsaw, Hayabusa, DeepBlueCLI  
-- **Live Triage**: Inquisitor, Redline, Velociraptor
+### Red Team
 
----
+* **Initial Access**: Print Spooler exploit (T1210)
+* **Execution**: Fileless DLL via `rundll32.exe` (T1218.011)
+* **Persistence**: Scheduled tasks via `schtasks.exe` (T1053.005)
+* **Lateral Movement**: PsExec/WMIC with valid credentials (T1078.003, T1021.002)
+* **Credential Access**: LSASS dump (T1003.001)
+* **Defense Evasion**: Event log clearing (T1070.001)
+* **Impact**: Data encryption and system reboot (T1486, T1529)
 
-## 3. HiveNightmare (CVE‑2021‑36934) Detection
+### Blue Team
 
-### TTP Summary
+* **Sensors**:
 
-- **Exploit Name**: HiveNightmare / SeriousSAM  
-- **CVE**: CVE-2021-36934  
-- **Attack Vector**: Misconfigured access to registry hive backups via Volume Shadow Copy (VSS)  
-- **MITRE ATT&CK TTPs**:
-  - T1003.002 – OS Credential Dumping: SAM
-  - T1087.002 – Account Discovery
-  - T1056.001 – Input Capture (Persistence)
-  - T1003.006 – Credential Dumping via VSS
+  * Sysmon (Windows Event Logging)
+  * Winlogbeat (Log forwarder)
+  * Elastic Agent (optional)
 
----
+* **SIEM**: ELK Stack (ElasticSearch, Logstash, Kibana)
 
-## Detection Events
+* **Detection**:
 
-| Event ID | Description | Logic |
-|----------|-------------|-------|
-| 4688 | Process creation | Non-admin runs `HiveNightmare.exe`, `vssadmin`, or `diskshadow` |
-| 4656 | Object handle request | Access attempt to `SAM`, `SYSTEM`, or `SECURITY` hives |
-| 4663 | Object access | Read/Write to hive files |
-| 8003 | VSS snapshot created (optional audit policy) | Shadow copy abuse |
+  * Sigma rules (mapped to TTPs)
+  * LOLBin execution monitoring
+  * High entropy file/disk detection
 
 ---
 
-## Detection Queries
+## 💡 Integration with LOLBins
 
-**Suspicious Process Creation (KQL/Elastic):**
+Use LOLBins from [lolol.farm](https://lolol.farm/) to avoid AV/EDR detection:
 
-```kql
-EventID == 4688 AND (
-  NewProcessName CONTAINS "vssadmin.exe" OR
-  NewProcessName CONTAINS "diskshadow.exe" OR
-  CommandLine CONTAINS "shadow" OR "HiveNightmare"
-) AND
-SubjectUserGroup != "Administrators"
+| Technique | LOLBins Used                                  |
+| --------- | --------------------------------------------- |
+| T1486     | `cipher.exe`, `bcdedit.exe`, `manage-bde.exe` |
+| T1210     | `rundll32.exe`, `reg.exe`, `spoolsv.exe`      |
+| T1036     | `PsExec.exe` renamed to `dllhost.dat`         |
+| T1053.005 | `schtasks.exe`, `powershell.exe`              |
+| T1218.011 | `rundll32.exe`                                |
+
+---
+
+## 📊 ELK Detection Dashboard Panels
+
+### 🔍 Panels to Create
+
+* **LOLBin Executions**: `process.name: ("rundll32.exe" OR "wevtutil.exe" OR "PsExec.exe")`
+* **High Entropy File Activity**: Identify ransomware-like behavior
+* **Scheduled Tasks**: Visualize new task creations
+* **Log Tampering**: Detect `wevtutil.exe` clearing
+* **Credential Dumps**: `procdump.exe`, `mimikatz` detections
+
+### 🎯 MITRE Mapping Panel
+
+* Integrate with Elastic’s ATT\&CK navigator or Kibana Canvas
+* Use custom tags to align logs with MITRE TTPs
+
+---
+
+## 📑 Documentation Template for Showcase (Interview)
+
+### 1. Executive Summary
+
+* Short 1-pager on simulation purpose and key takeaways
+
+### 2. Red Team Report
+
+* Step-by-step execution plan
+* LOLBins used and mapped ATT\&CK techniques
+* Sample encoded command or shellcode
+
+### 3. Blue Team Report
+
+* Screenshots of ELK alerts, panels
+* Detected Sigma matches
+* Detection gaps and how they were closed
+
+### 4. Lessons Learned
+
+* Strengths of simulation
+* How it mimics real-world APT techniques
+* What can be improved (e.g., DCRAT-style remote ops, DGA usage, etc.)
+
+---
+
+## ✅ Professional Tips for Interview Showcase
+
+1. **Portfolio Format**: Host on GitHub Pages or Notion with visuals and links to Sigma/ELK configs.
+2. **Readme Quality**: Write a crystal-clear `README.md` that explains:
+
+   * Objectives
+   * Techniques used (with MITRE ID)
+   * Tools used and why
+   * Screenshots or diagrams
+3. **Demo Video** (optional): 3-5 minute narrated walkthrough (OBS Studio).
+4. **CI/CD Touch**: Use GitHub Actions or simple scripts to auto-push config updates.
+5. **Blue Team Insight**: Mention what you *couldn’t* detect and how you'd tune next time.
+6. **Map to Real Threat Actors**: E.g., align to FIN12, Conti, Wizard Spider with ATT\&CK mapping.
+
+---
+
+## 🔚 Outcome
+
+This project provides:
+
+* Demonstrable **red and blue team capability**
+* Ability to script, inject, detect, and analyze advanced malware
+* Communication of technical findings in a structured, actionable format
+
+A strong asset for any offensive or defensive security role.
